@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode, HTMLTags, LeafNode
+from htmlnode import HTMLNode, HTMLTags, LeafNode, ParentNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_htmlnode_initialization_with_enum(self):
@@ -73,5 +73,21 @@ class TestLeafNode(unittest.TestCase):
         node = LeafNode("p", "Hello, world!")
         self.assertEqual(node.to_html(), "<p>Hello, world!</p>")
 
+class test_parentNode(unittest.TestCase):
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
+
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
+
+#TODO Write better test cases for ParentNode and LeafNodes. Also test negative cases on these tests as I've not done so yet
 if __name__ == "__main__":
     unittest.main()

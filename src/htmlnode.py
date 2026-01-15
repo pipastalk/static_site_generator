@@ -18,6 +18,9 @@ class HTMLTags(Enum):
     H4 = "h4"
     H5 = "h5"
     H6 = "h6"
+    B = "b"
+    I = "i"
+    U = "u"
     RAW_TEXT = None # Special case for raw text nodes
 
 class HTMLNode:
@@ -53,3 +56,17 @@ class LeafNode(HTMLNode):
         return f"{tag}{self.value}{endtag}"
     def __repr__(self):
         return f"leafNode(tag={self.tag!r}, value={self.value!r}, props={self.props!r})"
+
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag, None, children, props)
+    def to_html(self):
+        if self.tag is None:
+            raise ValueError("Parent node must have a valid tag")
+        if self.children is None:
+            raise ValueError("Parent node must have children")
+        child_html = f"<{self.tag.value}>"
+        for child in self.children:
+            child_html += child.to_html()
+        child_html += f"</{self.tag.value}>"
+        return child_html
