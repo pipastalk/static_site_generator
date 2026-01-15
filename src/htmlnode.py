@@ -38,7 +38,7 @@ class HTMLNode:
         return f"HTMLNode(tag={self.tag!r}, value={self.value!r}, children={self.children!r}, props={self.props!r})"
     
 
-class leafNode(HTMLNode):
+class LeafNode(HTMLNode):
     def __init__(self, tag, value, props=None):
         tag = tag if isinstance(tag, HTMLTags) else HTMLTags(tag)
         super().__init__(tag=tag, value=value, children=None, props=props)

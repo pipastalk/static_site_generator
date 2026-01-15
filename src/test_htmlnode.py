@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode, HTMLTags
+from htmlnode import HTMLNode, HTMLTags, LeafNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_htmlnode_initialization_with_enum(self):
@@ -45,6 +45,33 @@ class TestHTMLNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             HTMLNode(tag="notatag")
 
+class TestLeafNode(unittest.TestCase):
+    def test_leafnode_initialization(self):
+        node = LeafNode("span", "Sample text", props={"style": "color:red;"})
+        self.assertEqual(node.tag, HTMLTags.SPAN)
+        self.assertEqual(node.value, "Sample text")
+        self.assertIsNone(node.children)
+        self.assertEqual(node.props, {"style": "color:red;"})
+    def test_leafnode_initialiaztion_none_tag(self):
+        node = LeafNode(None, "Raw text")
+        self.assertIsNone(node.tag.value)
+        self.assertEqual(node.value, "Raw text")
+        self.assertIsNone(node.children)
+        self.assertIsNone(node.props)
+    def test_leafnode_repr(self):
+        node = LeafNode("img", "image.png", props={"alt": "An image"})
+        rep = repr(node)
+        self.assertIn("leafNode", rep)
+        self.assertIn("img", rep)
+        self.assertIn("image.png", rep)
+        self.assertIn("'alt': 'An image'", rep)
+
+    def test_leaf_to_html_div(self):
+        node = LeafNode("div", "Content")
+        self.assertEqual(node.to_html(), "<div>Content</div>")
+    def test_leaf_to_html_p(self):
+        node = LeafNode("p", "Hello, world!")
+        self.assertEqual(node.to_html(), "<p>Hello, world!</p>")
 
 if __name__ == "__main__":
     unittest.main()
