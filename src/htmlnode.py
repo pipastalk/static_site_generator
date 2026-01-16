@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import overload
 from unittest import case
 class HTMLTags(Enum):
     DIV = "div"
@@ -33,12 +34,23 @@ class HTMLNode:
     def to_html(self):
         raise NotImplementedError("to_html method must be implemented by subclasses")
     def props_to_html(self):
+        props_str = ""
         if not self.props:
-            return ""
-        props_str = " ".join(f' {key}="{value}"' for key, value in self.props.items())
+            return props_str # Return empty string if no props
+        for key, value in self.props.items():
+            if key is None or value is None:
+                raise ValueError(f"props key and value cannot be None \n{self.props!r}")
+            props_str += f' {key}="{value}"'
         return props_str
     def __repr__(self):
         return f"HTMLNode(tag={self.tag!r}, value={self.value!r}, children={self.children!r}, props={self.props!r})"
+    def __eq__(self, other):
+        return (
+            isinstance(other, LeafNode) and
+            self.tag == other.tag and
+            self.value == other.value and
+            self.props == other.props
+        )
     
 
 class LeafNode(HTMLNode):
@@ -49,7 +61,7 @@ class LeafNode(HTMLNode):
     def to_html(self):
         if self.value is None:
             raise ValueError("Leaf node must have a value")
-        if self.tag is None:
+        if self.tag is HTMLTags.RAW_TEXT:
             return self.value
         tag = f"<{self.tag.value}>"
         endtag = f"</{self.tag.value}>"
@@ -58,12 +70,18 @@ class LeafNode(HTMLNode):
         return f"leafNode(tag={self.tag!r}, value={self.value!r}, props={self.props!r})"
 
 class ParentNode(HTMLNode):
+    @overload
+    def __init__(self, tag, children: list, props=None): ...
     def __init__(self, tag, children, props=None):
+        if not isinstance(children, list):
+            raise ValueError("ParentNode children must be a list")
+        if not children:
+            raise ValueError("ParentNode children cannot be empty or None")
         super().__init__(tag, None, children, props)
     def to_html(self):
-        if self.tag is None:
+        if self.tag is HTMLTags.RAW_TEXT:
             raise ValueError("Parent node must have a valid tag")
-        if self.children is None:
+        if not self.children:
             raise ValueError("Parent node must have children")
         child_html = f"<{self.tag.value}>"
         for child in self.children:
