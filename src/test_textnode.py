@@ -38,7 +38,6 @@ class TestTextNode(unittest.TestCase):
     def test_invalid_text_type(self):
         with self.assertRaises(ValueError, msg="Creating TextNode with invalid text_type should raise ValueError"):
             TextNode("Sample text", "invalid_type")
-    
 
 if __name__ == "__main__":
     unittest.main()

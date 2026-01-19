@@ -1,25 +1,26 @@
 from enum import Enum
 from typing import overload
+from htmlnode import *
 class TextType(Enum):
-    # H1 = "h1"
-    # H2 = "h2"
-    # H3 = "h3"
-    # H4 = "h4"
-    # H5 = "h5"
-    # H6 = "h6"
-    # H7 = "h6"
+    H1 = "h1"
+    H2 = "h2"
+    H3 = "h3"
+    H4 = "h4"
+    H5 = "h5"
+    H6 = "h6"
     # PARAGRAPH = "paragraph"
     TEXT = "text"
     BOLD = "bold"
     ITALIC = "italic"
+    CODE = "code"
     LINK = "link"
     IMAGE = "image"
     # UNORDERED_LIST = "unordered_list"
     # ORDERED_LIST = "ordered_list"
     # LIST_ITEM = "list_item"
-    # QUOTE = "quote"
-    # CODE = "code"
-
+    QUOTE = "quote"
+    
+    
 class TextNode:
     @overload
     def __init__(self, text, text_type: TextType, url=None): ...
@@ -44,3 +45,5 @@ class TextNode:
         )
     def __repr__(self):
         return(f"TextNode({self.text!r}, {self.text_type.value!r}, {self.url!r})")
+    
+
