@@ -1,8 +1,8 @@
-from markup_tools import MarkUpTools
+from markup_tools import *
 from textnode import TextNode, TextType
 import unittest
 
-class TestMarkupTools(unittest.TestCase):
+class Test_Split_Nodes_Delimiter(unittest.TestCase):
     def test_markup_tool_functionality(self):
         node = TextNode("This is text with a `code block` and another `snippet` word", TextType.TEXT)
         new_nodes = MarkUpTools.split_nodes_delimiter([node], "`", TextType.CODE)
@@ -81,6 +81,59 @@ class TestMarkupTools(unittest.TestCase):
         self.assertEqual(html_node.tag.value, "img")
         self.assertEqual(html_node.value, "Image alt text")
         self.assertEqual(html_node.props, {"src": "https://example.com/image.png", "alt": "Image alt text"})
+
+class TestExtractMarkdownLinks(unittest.TestCase):
+    def test_link_missing(self):
+        text = "[](http://example.com)"
+        with self.assertRaises(ValueError):
+            MarkUpTools.extract_markdown_links(text)
+
+    def test_url_missing(self):
+        text = "[Example]()"
+        with self.assertRaises(ValueError):
+            MarkUpTools.extract_markdown_links(text)
+
+    def test_link_and_url_missing(self):
+        text = "[]()"
+        with self.assertRaises(ValueError):
+            MarkUpTools.extract_markdown_links(text)
+
+    def test_link_and_url_valid(self):
+        text = "[Example](http://example.com)"
+        result = MarkUpTools.extract_markdown_links(text)
+        self.assertEqual(result, [("Example", "http://example.com")])
+
+    def test_misformatted_markup_for_links(self):
+        text = "[Example(http://example.com)"
+        result = MarkUpTools.extract_markdown_links(text)
+        self.assertIsInstance(result, ValueError)
+
+class TestExtractMarkdownImages(unittest.TestCase):
+    def test_image_missing(self):
+        text = "![](http://example.com/image.png)"
+        # Should not raise, just pass silently
+        result = MarkUpTools.extract_markdown_images(text)
+        self.assertEqual(result, [("", "http://example.com/image.png")])
+
+    def test_url_missing(self):
+        text = "![alt text]()"
+        with self.assertRaises(ValueError):
+            MarkUpTools.extract_markdown_images(text)
+
+    def test_image_and_url_missing(self):
+        text = "![]()"
+        with self.assertRaises(ValueError):
+            MarkUpTools.extract_markdown_images(text)
+
+    def test_image_and_url_valid(self):
+        text = "![alt text](http://example.com/image.png)"
+        result = MarkUpTools.extract_markdown_images(text)
+        self.assertEqual(result, [("alt text", "http://example.com/image.png")])
+
+    def test_misformatted_markup_for_image(self):
+        text = "![alt text(http://example.com/image.png)"
+        result = MarkUpTools.extract_markdown_images(text)
+        self.assertIsInstance(result, ValueError)
 
 if __name__ == '__main__':
     unittest.main()

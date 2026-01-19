@@ -1,6 +1,6 @@
 from htmlnode import HTMLNode, HTMLTags, LeafNode
 from textnode import TextNode, TextType
-
+import re
 
 class MarkUpTools:
 
@@ -42,4 +42,34 @@ class MarkUpTools:
             case _:
                 raise ValueError(f"Unsupported TextType for conversion to HTMLNode: {text_node.text_type!r}")
         return LeafNode(tag=tag, value=text_node.text, props=props)
-        
+    
+    def extract_markdown_images(text):
+        #return data = [(alt_text, image_source), ...]
+        delimiter_pattern = r'!\[(.*?)\]\((.*?)\)'
+        matches = re.findall(delimiter_pattern, text)
+        if matches:
+            for match in matches:
+                if not match[0] and not match[1]:
+                    raise ValueError(f"Image alt text and source URL are missing in {match}")
+                elif not match[1]:
+                    raise ValueError(f"Image source URL is missing in {match}")
+                elif not match[0]:
+                    pass #TODO change this to silent logging later
+                    # raise ValueError(f"Image alt text is missing in {match}") 
+            return matches
+        return ValueError("No markdown images found")
+
+    def extract_markdown_links(text):
+        #return data = [(link, url), ...]
+        delimiter_pattern = r'\[(.*?)\]\((.*?)\)'
+        matches = re.findall(delimiter_pattern, text)
+        if matches:
+            for match in matches:
+                if not match[0] and not match[1]:
+                    raise ValueError(f"Link text and URL are missing in {match}")
+                if not match[1]:
+                    raise ValueError(f"Link URL is missing in {match}")
+                if not match[0]:
+                    raise ValueError(f"Link text is missing in {match}") 
+            return matches
+        return ValueError("No markdown images found")
