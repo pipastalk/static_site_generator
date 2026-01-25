@@ -43,33 +43,86 @@ class MarkUpTools:
                 raise ValueError(f"Unsupported TextType for conversion to HTMLNode: {text_node.text_type!r}")
         return LeafNode(tag=tag, value=text_node.text, props=props)
     
-    def extract_markdown_images(text):
-        #return data = [(alt_text, image_source), ...]
-        delimiter_pattern = r'!\[(.*?)\]\((.*?)\)'
+    def extract_markdown_images(text): #return data = [(alt_text, image_source), ...]
+        delimiter_pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
         matches = re.findall(delimiter_pattern, text)
         if matches:
             for match in matches:
                 if not match[0] and not match[1]:
-                    raise ValueError(f"Image alt text and source URL are missing in {match}")
+                    raise ValueError(f"{TextType.IMAGE.value.lower()} alt text and source URL are missing in {match}")
                 elif not match[1]:
-                    raise ValueError(f"Image source URL is missing in {match}")
+                    raise ValueError(f"{TextType.IMAGE.value.lower()} source URL is missing in {match}")
                 elif not match[0]:
                     pass #TODO change this to silent logging later
-                    # raise ValueError(f"Image alt text is missing in {match}") 
+                    # raise ValueError(f"{TextType.IMAGE.value.lower()} alt text is missing in {match}") 
             return matches
-        return ValueError("No markdown images found")
-
-    def extract_markdown_links(text):
-        #return data = [(link, url), ...]
-        delimiter_pattern = r'\[(.*?)\]\((.*?)\)'
+        raise ValueError(f"No {TextType.IMAGE.value.lower()}s found")
+    
+    def extract_markdown_links(text): #return data = [(link, url), ...]
+        delimiter_pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
         matches = re.findall(delimiter_pattern, text)
         if matches:
             for match in matches:
                 if not match[0] and not match[1]:
-                    raise ValueError(f"Link text and URL are missing in {match}")
+                    raise ValueError(f"{TextType.LINK.value.lower()} text and URL are missing in {match}")
                 if not match[1]:
-                    raise ValueError(f"Link URL is missing in {match}")
+                    raise ValueError(f"{TextType.LINK.value.lower()} URL is missing in {match}")
                 if not match[0]:
-                    raise ValueError(f"Link text is missing in {match}") 
+                    raise ValueError(f"{TextType.LINK.value.lower()} text is missing in {match}") 
             return matches
-        return ValueError("No markdown images found")
+        raise ValueError(f"No {TextType.LINK.value.lower()}s found")
+
+    def split_nodes_special(old_nodes, text_type:TextType):
+        if isinstance(old_nodes, TextNode):
+            old_nodes = [old_nodes]
+        new_nodes = []
+        match text_type:
+            case TextType.IMAGE:
+                extractor = MarkUpTools.extract_markdown_images
+            case TextType.LINK:
+                extractor = MarkUpTools.extract_markdown_links
+            case _:
+                raise ValueError(f"Unsupported TextType for split_nodes_special: {text_type!r}")
+        for node in old_nodes:
+            text = node.text
+            match node.text_type:
+                case TextType.IMAGE:
+                    new_nodes.append(node)
+                case TextType.LINK:
+                    new_nodes.append(node)
+                case _:
+                    try: 
+                        links = extractor(text)
+                    except ValueError as e:
+                        if str(e) == f"No {TextType.LINK.value.lower()}s found":
+                            new_nodes.append(node)
+                            continue
+                        elif str(e) == f"No {TextType.IMAGE.value.lower()}s found" and text != "":
+                            new_nodes.append(node)
+                            continue
+                        else:
+                            raise e
+                    if not links:
+                        new_nodes.append(node)
+                    else:
+                        match = links[0]
+                        special_text = match[0]
+                        url = match[1]
+                        match text_type:
+                            case TextType.IMAGE:
+                                delimiter = f"![{special_text}]({url})"
+                            case TextType.LINK:
+                                delimiter = f"[{special_text}]({url})"
+                            case _:
+                                raise ValueError(f"Unsupported TextType for split_nodes_special: {text_type!r}")    
+                        parts = text.split(delimiter,1)
+                        prefix_node = TextNode(parts[0], node.text_type) if parts[0] != "" else None
+                        special_node = TextNode(special_text, text_type, url)
+                        suffix_node = TextNode(parts[1], node.text_type) if parts[1] != "" else None
+                        new_nodes.extend(filter(None, [prefix_node, special_node]))
+                        if suffix_node is not None:
+                            split_suffix_nodes = MarkUpTools.split_nodes_special([suffix_node], text_type)
+                            new_nodes.extend(split_suffix_nodes)
+        return new_nodes    
+#
+#TODO Handle invalid src or href URLs inside split_nodes_special
