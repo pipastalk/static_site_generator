@@ -106,8 +106,7 @@ class TestExtractMarkdownLinks(unittest.TestCase):
 
     def test_misformatted_markup_for_links(self):
         text = "[Example(http://example.com)"
-        with self.assertRaises(ValueError):
-            result = MarkUpTools.extract_markdown_links(text)
+        self.assertEqual(MarkUpTools.extract_markdown_links(text), [])
 
 class TestExtractMarkdownImages(unittest.TestCase):
     def test_image_missing(self):
@@ -133,8 +132,7 @@ class TestExtractMarkdownImages(unittest.TestCase):
 
     def test_misformatted_markup_for_image(self):
         text = "![alt text(http://example.com/image.png)"
-        with self.assertRaises(ValueError):        
-            result = MarkUpTools.extract_markdown_images(text)
+        self.assertEqual(MarkUpTools.extract_markdown_images(text), [])
 
 # Tests for split_nodes_link
 class Test_Split_Nodes_Link(unittest.TestCase):

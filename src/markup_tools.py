@@ -56,7 +56,7 @@ class MarkUpTools:
                     pass #TODO change this to silent logging later
                     # raise ValueError(f"{TextType.IMAGE.value.lower()} alt text is missing in {match}") 
             return matches
-        raise ValueError(f"No {TextType.IMAGE.value.lower()}s found")
+        return []
     
     def extract_markdown_links(text): #return data = [(link, url), ...]
         delimiter_pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
@@ -70,8 +70,12 @@ class MarkUpTools:
                 if not match[0]:
                     raise ValueError(f"{TextType.LINK.value.lower()} text is missing in {match}") 
             return matches
-        raise ValueError(f"No {TextType.LINK.value.lower()}s found")
+        return []
+    def split_nodes_link(old_nodes): #wrapper function
+        return MarkUpTools.split_nodes_special(old_nodes, TextType.LINK)
 
+    def split_nodes_image(old_nodes): #wrapper function
+        return MarkUpTools.split_nodes_special(old_nodes, TextType.IMAGE)
     def split_nodes_special(old_nodes, text_type:TextType):
         if isinstance(old_nodes, TextNode):
             old_nodes = [old_nodes]
@@ -91,21 +95,11 @@ class MarkUpTools:
                 case TextType.LINK:
                     new_nodes.append(node)
                 case _:
-                    try: 
-                        links = extractor(text)
-                    except ValueError as e:
-                        if str(e) == f"No {TextType.LINK.value.lower()}s found":
-                            new_nodes.append(node)
-                            continue
-                        elif str(e) == f"No {TextType.IMAGE.value.lower()}s found" and text != "":
-                            new_nodes.append(node)
-                            continue
-                        else:
-                            raise e
-                    if not links:
+                    matches = extractor(text)
+                    if not matches:
                         new_nodes.append(node)
                     else:
-                        match = links[0]
+                        match = matches[0]
                         special_text = match[0]
                         url = match[1]
                         match text_type:
