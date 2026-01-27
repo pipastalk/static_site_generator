@@ -135,6 +135,13 @@ class MarkUpTools:
         nodes = MarkUpTools.split_nodes_image(nodes)
         nodes = MarkUpTools.split_nodes_link(nodes)
         return nodes
-            
-#
+    def markdown_to_blocks(text):
+        lines = text.split("\n\n")
+        blocks = []
+        for line in lines:
+            line = line.strip()
+            if line == "":
+                continue
+            blocks.append(line)
+        return blocks
 #TODO Handle invalid src or href URLs inside split_nodes_special
