@@ -1,6 +1,7 @@
 from htmlnode import HTMLNode, HTMLTags, LeafNode
 from textnode import TextNode, TextType
 import re
+from blocknode import BlockType, BlockNode
 
 class MarkUpTools:
 
@@ -144,4 +145,28 @@ class MarkUpTools:
                 continue
             blocks.append(line)
         return blocks
+    
+    def block_to_block_type(block):
+        if block == "":
+            raise ValueError("Empty block has no BlockType")
+        for tag in BlockType:
+            md = tag.markdown
+            if md is None:
+                continue
+            if tag == BlockType.ORDERED_LIST_ITEM:
+                pattern = r"^\d+\."
+                if re.match(pattern, block):
+                    return tag
+            elif tag == BlockType.CODEBLOCK:
+                if block.startswith(md) and block.endswith(md):
+                    if block.split(md, 1)[1].strip() == "":
+                        raise ValueError(f"Empty block, {tag.display_name} has no content {block!r}")
+                    return tag
+                elif block.startswith(md):
+                    raise ValueError(f"Invalid markdown, codeblock is opened but never closed {block!r}")
+            elif block[:len(md)] == md:
+                if block.split(md, 1)[1].strip() == "":
+                    raise ValueError(f"Empty block, {tag.display_name} has no content {block!r}")
+                return tag
+        return BlockType.PARAGRAPH
 #TODO Handle invalid src or href URLs inside split_nodes_special

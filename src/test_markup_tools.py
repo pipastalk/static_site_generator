@@ -2,7 +2,7 @@ from unittest import result
 from markup_tools import *
 from textnode import TextNode, TextType
 import unittest
-
+from blocknode import BlockType, BlockNode
 class Test_Split_Nodes_Delimiter(unittest.TestCase):
     def test_markup_tool_functionality(self):
         node = TextNode("This is text with a `code block` and another `snippet` word", TextType.TEXT)
@@ -289,5 +289,39 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+class TestBlockToBlockType(unittest.TestCase):
+    def test_empty_block_raises(self):
+        with self.assertRaises(ValueError):
+            MarkUpTools.block_to_block_type("")
+    def test_empty_blocks(self):
+        with self.assertRaises(ValueError):
+            MarkUpTools.block_to_block_type("#    ")
+        with self.assertRaises(ValueError):
+            MarkUpTools.block_to_block_type(">    ")
+    def test_open_codeblock(self):
+        with self.assertRaises(ValueError):
+            MarkUpTools.block_to_block_type("``` I'm an unclosed codeblock")
+    def test_headings(self):
+        self.assertEqual(MarkUpTools.block_to_block_type("# Heading 1"), BlockType.H1)
+        self.assertEqual(MarkUpTools.block_to_block_type("## Heading 2"), BlockType.H2)
+        self.assertEqual(MarkUpTools.block_to_block_type("### Heading 3"), BlockType.H3)
+        self.assertEqual(MarkUpTools.block_to_block_type("#### Heading 4"), BlockType.H4)
+        self.assertEqual(MarkUpTools.block_to_block_type("##### Heading 5"), BlockType.H5)
+        self.assertEqual(MarkUpTools.block_to_block_type("###### Heading 6"), BlockType.H6)
+
+    def test_quote(self):
+        self.assertEqual(MarkUpTools.block_to_block_type("> This is a quote"), BlockType.QUOTE)
+
+    def test_unordered_list(self):
+        self.assertEqual(MarkUpTools.block_to_block_type("- List item"), BlockType.UNORDERED_LIST)
+
+    def test_ordered_list_item(self):
+        self.assertEqual(MarkUpTools.block_to_block_type("1. Ordered item"), BlockType.ORDERED_LIST_ITEM)
+
+    def test_codeblock(self):
+        self.assertEqual(MarkUpTools.block_to_block_type("```code with multiple lines \nof random stuff\n just to mess with you \n ddsadea```"), BlockType.CODEBLOCK)
+
+    def test_no_match_returns_paragraph(self):
+        self.assertEqual(MarkUpTools.block_to_block_type("Just a normal paragraph."), BlockType.PARAGRAPH)
 if __name__ == '__main__':
     unittest.main()
