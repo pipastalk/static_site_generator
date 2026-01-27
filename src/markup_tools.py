@@ -123,7 +123,9 @@ class MarkUpTools:
         # "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
         nodes = [TextNode(text, TextType.TEXT)]
         for tag in TextType:
-            if  tag.markdown_close == None or tag.markdown_open == None:
+            if tag.category != "inline":
+                continue
+            elif  tag.markdown_close == None or tag.markdown_open == None:
                 continue
             if tag.markdown_open == tag.markdown_close:
                 nodes = MarkUpTools.split_nodes_delimiter(nodes, tag.markdown_open, tag)

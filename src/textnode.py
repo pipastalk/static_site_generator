@@ -3,20 +3,21 @@ from typing import overload
 from htmlnode import *
 class TextType(Enum):
     #TODO Currently only includes inline text types
+    # format: 0 = display_name, 1=markdown_open, 2=markdown_close, 3=html_open, 4=html_close, 5=category(inline/block/special) 
     
-    # H1 = ("h1", "#", "\n", "<h1>", "</h1>")
-    # H2 = ("h2", "##", "\n", "<h2>", "</h2>")
-    # H3 = ("h3", "###", "\n", "<h3>", "</h3>")
-    # H4 = ("h4", "####", "\n", "<h4>", "</h4>")
-    # H5 = ("h5", "#####", "\n", "<h5>", "</h5>")
-    # H6 = ("h6", "######", "\n", "<h6>", "</h6>")
-    TEXT = ("text", None, None, None, None)
-    BOLD = ("bold", "**", "**", "<strong>", "</strong>")
-    ITALIC = ("italic", "_", "_", "<em>", "</em>")
-    CODE = ("code", "`", "`", "<code>", "</code>")
-    LINK = ("link", None, None, "<a>", "</a>")
-    IMAGE = ("image", None, None, "<img>", "</img>")
-    # QUOTE = ("quote", "> ", "\n", "<blockquote>", "</blockquote>")
+    # H1 = ("h1", "#", "\n", "<h1>", "</h1>", "inline")
+    # H2 = ("h2", "##", "\n", "<h2>", "</h2>", "inline")
+    # H3 = ("h3", "###", "\n", "<h3>", "</h3>", "inline")
+    # H4 = ("h4", "####", "\n", "<h4>", "</h4>", "inline")
+    # H5 = ("h5", "#####", "\n", "<h5>", "</h5>", "inline")
+    # H6 = ("h6", "######", "\n", "<h6>", "</h6>", "inline")
+    TEXT = ("text", None, None, None, None, None)
+    BOLD = ("bold", "**", "**", "<strong>", "</strong>", "inline")
+    ITALIC = ("italic", "_", "_", "<em>", "</em>", "inline")
+    CODE = ("code", "`", "`", "<code>", "</code>", "inline")
+    LINK = ("link", None, None, "<a>", "</a>", "special")
+    IMAGE = ("image", None, None, "<img>", "</img>", "special")
+    # QUOTE = ("quote", "> ", "None" "<blockquote>", "</blockquote>", "block")
     # PARAGRAPH = "paragraph"
     # UNORDERED_LIST = "unordered_list"
     # ORDERED_LIST = "ordered_list"
@@ -37,7 +38,10 @@ class TextType(Enum):
     @property
     def html_close(self):
         return self.value[4]
-    
+    @property
+    def category(self):
+        return self.value[5]
+
 class TextNode:
     @overload
     def __init__(self, text, text_type: TextType, url=None): ...
