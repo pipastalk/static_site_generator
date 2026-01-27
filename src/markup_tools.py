@@ -4,7 +4,7 @@ import re
 
 class MarkUpTools:
 
-    def split_nodes_delimiter(old_nodes:TextNode, delimiter, text_type:TextType):
+    def split_nodes_delimiter(old_nodes:TextNode, delimiter, text_type:TextType) -> list[TextNode]:
         new_nodes = []
         for old_node in old_nodes:
             if old_node.text_type != TextType.TEXT:
@@ -49,12 +49,12 @@ class MarkUpTools:
         if matches:
             for match in matches:
                 if not match[0] and not match[1]:
-                    raise ValueError(f"{TextType.IMAGE.value.lower()} alt text and source URL are missing in {match}")
+                    raise ValueError(f"{TextType.IMAGE.display_name.lower()} alt text and source URL are missing in {match}")
                 elif not match[1]:
-                    raise ValueError(f"{TextType.IMAGE.value.lower()} source URL is missing in {match}")
+                    raise ValueError(f"{TextType.IMAGE.display_name.lower()} source URL is missing in {match}")
                 elif not match[0]:
                     pass #TODO change this to silent logging later
-                    # raise ValueError(f"{TextType.IMAGE.value.lower()} alt text is missing in {match}") 
+                    # raise ValueError(f"{TextType.IMAGE.display_name.lower()} alt text is missing in {match}") 
             return matches
         return []
     
@@ -64,11 +64,11 @@ class MarkUpTools:
         if matches:
             for match in matches:
                 if not match[0] and not match[1]:
-                    raise ValueError(f"{TextType.LINK.value.lower()} text and URL are missing in {match}")
+                    raise ValueError(f"{TextType.LINK.display_name.lower()} text and URL are missing in {match}")
                 if not match[1]:
-                    raise ValueError(f"{TextType.LINK.value.lower()} URL is missing in {match}")
+                    raise ValueError(f"{TextType.LINK.display_name.lower()} URL is missing in {match}")
                 if not match[0]:
-                    raise ValueError(f"{TextType.LINK.value.lower()} text is missing in {match}") 
+                    raise ValueError(f"{TextType.LINK.display_name.lower()} text is missing in {match}") 
             return matches
         return []
     def split_nodes_link(old_nodes): #wrapper function
@@ -118,5 +118,21 @@ class MarkUpTools:
                             split_suffix_nodes = MarkUpTools.split_nodes_special([suffix_node], text_type)
                             new_nodes.extend(split_suffix_nodes)
         return new_nodes    
+    
+    def text_to_text_nodes(text):
+        # "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        nodes = [TextNode(text, TextType.TEXT)]
+        for tag in TextType:
+            if  tag.markdown_close == None or tag.markdown_open == None:
+                continue
+            if tag.markdown_open == tag.markdown_close:
+                nodes = MarkUpTools.split_nodes_delimiter(nodes, tag.markdown_open, tag)
+            else:
+                #TODO handle different opening and closing delimiters
+                pass
+        nodes = MarkUpTools.split_nodes_image(nodes)
+        nodes = MarkUpTools.split_nodes_link(nodes)
+        return nodes
+            
 #
 #TODO Handle invalid src or href URLs inside split_nodes_special
