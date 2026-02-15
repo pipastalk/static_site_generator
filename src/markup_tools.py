@@ -237,13 +237,15 @@ class MarkUpTools:
                 continue
             if block_type == BlockType.ORDERED_LIST_ITEM:
                 delimiter = f"{i+1}. "
-                if snipet.startswith(delimiter):
-                    snipet = re.sub(delimiter, "", snipet)
-                    list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.ORDERED_LIST_ITEM)
-                else:
-                    raise ValueError(f"Invalid ordered list number in {snipet!r}")
+
+                if not snipet.startswith(delimiter):
+                    raise ValueError(f"Invalid ordered list item, expected to start with {delimiter!r} but got {snipet!r}")
+                snipet = re.sub(delimiter, "", snipet)
+                list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.ORDERED_LIST_ITEM)
             elif block_type == BlockType.UNORDERED_LIST_ITEM:
                 delimiter = block_type.markdown
+                if not snipet.startswith(delimiter):
+                    raise ValueError(f"Invalid unordered list item, expected to start with {delimiter!r} but got {snipet!r}")
                 snipet = re.sub(delimiter, "", snipet)
                 list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.UNORDERED_LIST_ITEM)
             else:
