@@ -61,7 +61,8 @@ class LeafNode(HTMLNode):
     def __init__(self, tag, value, props=None):
         tag = tag if isinstance(tag, HTMLTags) else HTMLTags(tag)
         super().__init__(tag=tag, value=value, children=None, props=props)
-    
+        if self.children is not None:
+            raise TypeError("LeafNode cannot have children")
     def to_html(self):
         if self.value is None:
             raise ValueError("Leaf node must have a value")
@@ -82,6 +83,8 @@ class ParentNode(HTMLNode):
         if children is None:
             raise ValueError("ParentNode children cannot be None")
         super().__init__(tag, None, children, props)
+        if self.value is not None:
+            raise TypeError("ParentNode cannot have a value")
     def to_html(self):
         if self.tag is HTMLTags.RAW_TEXT:
             raise ValueError("Parent node must have a valid tag")

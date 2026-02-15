@@ -76,6 +76,7 @@ class TestParentNode(unittest.TestCase):
             noneChildrenParent.to_html()
         with self.assertRaises(ValueError):
             emptyChildrenParent = ParentNode(tag="div", children=[], props={"class": "container"})
+            emptyChildrenParent.to_html()
         emptyChildrenParent = ParentNode(tag="div", children=[LeafNode("span", "text")], props={"class": "container"})
         emptyChildrenParent.children = []
         with self.assertRaises(ValueError):
