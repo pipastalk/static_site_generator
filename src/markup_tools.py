@@ -183,7 +183,7 @@ class MarkUpTools:
             block_type = MarkUpTools.block_to_block_type(block)
             if block_type == BlockType.CODEBLOCK:
                 pre_wrapper = ParentNode(HTMLTags.PRE, children=[])
-                #text = block.strip(BlockType.CODEBLOCK.markdown
+                #region stipping codeblock markdown and validating it is correct
                 start_snip = block[0:3]
                 if start_snip != BlockType.CODEBLOCK.markdown:
                     raise ValueError(f"Invalid codeblock markdown, expected opening delimiter {BlockType.CODEBLOCK.markdown!r} but got {start_snip!r} in block: {block!r}")
@@ -191,6 +191,9 @@ class MarkUpTools:
                 if end_snip != BlockType.CODEBLOCK.markdown:
                     raise ValueError(f"Invalid codeblock markdown, expected closing delimiter {BlockType.CODEBLOCK.markdown!r} but got {end_snip!r} in block: {block!r}")
                 text = block[3:-3]
+                if text.startswith("\n"):
+                    text = text[1:]
+                #endregion
                 if not text.endswith("\n"):
                     text = text + "\n"
                 codeblock_text_node = TextNode(text=text, text_type=TextType.CODE)
@@ -206,8 +209,8 @@ class MarkUpTools:
     def block_to_html_nodes(block, block_type):
         # Helper function to convert a block of text into an HTMLNode based on its BlockType. Does not support CodeBlocks
         wrapper_node = None
-        text_nodes = MarkUpTools.text_to_text_nodes(block)
         block = block.replace("\n", " ")
+        text_nodes = MarkUpTools.text_to_text_nodes(block)
         if len(text_nodes)  < 1:
             raise ValueError(f"Unexpected error, text_to_text_nodes returned empty list for block: {block!r}")
         for i in range(len(text_nodes)):

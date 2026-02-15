@@ -313,7 +313,7 @@ class TestBlockToBlockType(unittest.TestCase):
         self.assertEqual(MarkUpTools.block_to_block_type("> This is a quote"), BlockType.QUOTE)
 
     def test_unordered_list(self):
-        self.assertEqual(MarkUpTools.block_to_block_type("- List item"), BlockType.UNORDERED_LIST)
+        self.assertEqual(MarkUpTools.block_to_block_type("- List item"), BlockType.UNORDERED_LIST_ITEM)
 
     def test_ordered_list_item(self):
         self.assertEqual(MarkUpTools.block_to_block_type("1. Ordered item"), BlockType.ORDERED_LIST_ITEM)
@@ -327,13 +327,13 @@ class TestBlockToBlockType(unittest.TestCase):
 class TestBlockToHTMLNodes(unittest.TestCase):
     def test_paragraphs(self):
         md = """
-    This is **bolded** paragraph
-    text in a p
-    tag here
+This is **bolded** paragraph
+text in a p
+tag here
 
-    This is another paragraph with _italic_ text and `code` here
+This is another paragraph with _italic_ text and `code` here
 
-    """
+"""
 
         node = MarkUpTools.markdown_to_html_node(md)
         html = node.to_html()
@@ -344,11 +344,11 @@ class TestBlockToHTMLNodes(unittest.TestCase):
 
     def test_codeblock(self):
         md = """
-    ```
-    This is text that _should_ remain
-    the **same** even with inline stuff
-    ```
-    """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
 
         node = MarkUpTools.markdown_to_html_node(md)
         html = node.to_html()
