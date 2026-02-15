@@ -312,7 +312,7 @@ class TestBlockToBlockType(unittest.TestCase):
     def test_quote(self):
         self.assertEqual(MarkUpTools.block_to_block_type("> This is a quote"), BlockType.QUOTE)
 
-    def test_unordered_list(self):
+    def test_unordered_list_item(self):
         self.assertEqual(MarkUpTools.block_to_block_type("- List item"), BlockType.UNORDERED_LIST_ITEM)
 
     def test_ordered_list_item(self):
@@ -356,5 +356,134 @@ the **same** even with inline stuff
             html,
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
+
+    def test_inline_bold_and_code(self):
+        md = "hello **bold** world, `this is some code` hopefully that didn't break shit"
+        node = MarkUpTools.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>hello <b>bold</b> world, <code>this is some code</code> hopefully that didn't break shit</p></div>",
+        )
+
+    def test_codeblock_with_and_without_trailing_newline(self):
+        md1 = "```\n**def hello_world():**\n    print('Hello, world!')\n```"
+        md2 = "```\n**def hello_world():**\n    print('Hello, world!')```"
+        node1 = MarkUpTools.markdown_to_html_node(md1)
+        node2 = MarkUpTools.markdown_to_html_node(md2)
+        expected = "<div><pre><code>**def hello_world():**\n    print('Hello, world!')\n</code></pre></div>"
+        self.assertEqual(node1.to_html(), expected)
+        self.assertEqual(node2.to_html(), expected)
+
+    def test_ordered_list(self):
+        md = "1. First item\n2. Second item\n3. Third item"
+        node = MarkUpTools.markdown_to_html_node(md)
+        self.assertEqual(node.to_html(), "<div><ol><li>First item</li><li>Second item</li><li>Third item</li></ol></div>")
+
+    def test_unordered_list(self):
+        md = "- First item\n- Second item\n- Third item"
+        node = MarkUpTools.markdown_to_html_node(md)
+        self.assertEqual(node.to_html(), "<div><ul><li>First item</li><li>Second item</li><li>Third item</li></ul></div>")
+
+    def test_errored_ordered_list(self):
+        md = "1. First item\n4. Second item\n3. Third item"
+        with self.assertRaises(ValueError):
+            MarkUpTools.markdown_to_html_node(md)
+
+    def test_complex_markdown_all_features(self):
+        md = """
+# Heading 1
+
+## Subheading 2
+
+Paragraph with **bold** and _italic_ and `inline`
+
+```
+def fn():
+    return True
+```
+
+1. First
+2. Second
+
+- Uno
+- Dos
+
+> A quoted line
+"""
+        node = MarkUpTools.markdown_to_html_node(md)
+        expected = (
+            "<div>"
+            "<h1># Heading 1</h1>"
+            "<h2>## Subheading 2</h2>"
+            "<p>Paragraph with <b>bold</b> and <i>italic</i> and <code>inline</code></p>"
+            "<pre><code>def fn():\n    return True\n</code></pre>"
+            "<ol><li>First</li><li>Second</li></ol>"
+            "<ul><li>Uno</li><li>Dos</li></ul>"
+            "<blockquote>> A quoted line</blockquote>"
+            "</div>"
+        )
+        self.assertEqual(node.to_html(), expected)
+
+    def test_headings_with_inline_effects(self):
+        md = """
+# Heading with **bold** and `code`
+
+## Another _italic_ heading
+"""
+        node = MarkUpTools.markdown_to_html_node(md)
+        expected = (
+            "<div>"
+            "<h1># Heading with <b>bold</b> and <code>code</code></h1>"
+            "<h2>## Another <i>italic</i> heading</h2>"
+            "</div>"
+        )
+        self.assertEqual(node.to_html(), expected)
+    def test_quote_block(self):
+        md = "> This is a quote\n> spanning multiple lines"
+        node = MarkUpTools.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a quote spanning multiple lines</blockquote></div>",
+        )
+class Test_Error_Cases(unittest.TestCase):
+    def test_text_node_to_html_node_unsupported(self):
+        node = TextNode("some codeblock", TextType.CODEBLOCK)
+        with self.assertRaises(ValueError):
+            MarkUpTools.text_node_to_html_node(node)
+
+    def test_split_nodes_special_unsupported_type(self):
+        node = TextNode("no special", TextType.TEXT)
+        with self.assertRaises(ValueError):
+            MarkUpTools.split_nodes_special(node, TextType.TEXT)
+
+    def test_block_to_block_type_empty_codeblock_raises(self):
+        block = ""
+        with self.assertRaises(ValueError):
+            MarkUpTools.block_to_block_type(block)
+
+    def test_list_block_to_html_nodes_unsupported_blocktype(self):
+        with self.assertRaises(ValueError):
+            MarkUpTools.list_block_to_html_nodes("- item", BlockType.PARAGRAPH)
+
+    def test_list_block_to_html_nodes_invalid_unordered_item(self):
+        # line does not start with '- ' (missing space)
+        md = "- First item\n-Second item"
+        with self.assertRaises(ValueError):
+            MarkUpTools.markdown_to_html_node(md)
+    def test_malformed_lists(self):
+        md = "1. First item\nSecond item without number\n3. Third item"
+        with self.assertRaises(ValueError):
+            MarkUpTools.markdown_to_html_node(md)
+            md = "1. First item\n- Second item without number\n3. Third item"
+        with self.assertRaises(ValueError):
+            MarkUpTools.markdown_to_html_node(md)
+        md = "- First item\nSecond item without number\n- Third item"
+        with self.assertRaises(ValueError):
+            MarkUpTools.markdown_to_html_node(md)
+        md = "1. First item\nSecond item without number\n3. Third item\n- Fourth item"
+        with self.assertRaises(ValueError):
+            MarkUpTools.markdown_to_html_node(md)
 if __name__ == '__main__':
     unittest.main()
