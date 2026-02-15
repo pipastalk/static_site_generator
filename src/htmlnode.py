@@ -79,8 +79,8 @@ class ParentNode(HTMLNode):
     def __init__(self, tag, children, props=None):
         if not isinstance(children, list):
             raise ValueError("ParentNode children must be a list")
-        if not children:
-            raise ValueError("ParentNode children cannot be empty or None")
+        if children is None:
+            raise ValueError("ParentNode children cannot be None")
         super().__init__(tag, None, children, props)
     def to_html(self):
         if self.tag is HTMLTags.RAW_TEXT:

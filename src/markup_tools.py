@@ -1,5 +1,5 @@
 import re
-from htmlnode import HTMLNode, HTMLTags, LeafNode
+from htmlnode import *
 from textnode import TextNode, TextType
 from blocknode import BlockType, BlockNode
 
@@ -128,6 +128,8 @@ class MarkUpTools:
     
     def text_to_text_nodes(text):
         nodes = [TextNode(text, TextType.TEXT)]
+        nodes = MarkUpTools.split_nodes_image(nodes)
+        nodes = MarkUpTools.split_nodes_link(nodes)
         for tag in TextType:
             if tag.category != "inline":
                 continue
@@ -138,8 +140,6 @@ class MarkUpTools:
             else:
                 #TODO handle different opening and closing delimiters
                 pass
-        nodes = MarkUpTools.split_nodes_image(nodes)
-        nodes = MarkUpTools.split_nodes_link(nodes)
         return nodes
     
     def markdown_to_blocks(text):
@@ -177,12 +177,12 @@ class MarkUpTools:
         return BlockType.PARAGRAPH
     
     def markdown_to_html_node(markdown):
-        parent_div = HTMLNode(HTMLTags.DIV, children=[])
+        parent_div = ParentNode(HTMLTags.DIV, children=[])
         blocks = MarkUpTools.markdown_to_blocks(markdown)
         for block in blocks:
             block_type = MarkUpTools.block_to_block_type(block)
             if block_type == BlockType.CODEBLOCK:
-                pre_wrapper = HTMLNode(HTMLTags.PRE, children=[])
+                pre_wrapper = ParentNode(HTMLTags.PRE, children=[])
                 #text = block.strip(BlockType.CODEBLOCK.markdown
                 start_snip = block[0:3]
                 if start_snip != BlockType.CODEBLOCK.markdown:
@@ -212,7 +212,7 @@ class MarkUpTools:
             raise ValueError(f"Unexpected error, text_to_text_nodes returned empty list for block: {block!r}")
         for i in range(len(text_nodes)):
             if i == 0:
-                wrapper_node = HTMLNode(block_type.html_tag, children=[])
+                wrapper_node = ParentNode(block_type.html_tag, children=[])
             leaf_node = MarkUpTools.text_node_to_html_node(text_nodes[i])
             wrapper_node.children.append(leaf_node)
         if wrapper_node is None:
@@ -221,9 +221,9 @@ class MarkUpTools:
     
     def list_block_to_html_nodes(block, block_type):
         if block_type == BlockType.ORDERED_LIST_ITEM:
-            wrapper_node = HTMLNode(HTMLTags.OL, children=[])
+            wrapper_node = ParentNode(HTMLTags.OL, children=[])
         elif block_type == BlockType.UNORDERED_LIST_ITEM:
-            wrapper_node = HTMLNode(HTMLTags.UL, children=[])
+            wrapper_node = ParentNode(HTMLTags.UL, children=[])
         else:
             raise ValueError(f"Unsupported BlockType for list_block_to_html_nodes: {block_type!r}")
         block_lines = block.split("\n")
