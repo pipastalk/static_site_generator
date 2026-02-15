@@ -183,7 +183,17 @@ class MarkUpTools:
             block_type = MarkUpTools.block_to_block_type(block)
             if block_type == BlockType.CODEBLOCK:
                 pre_wrapper = HTMLNode(HTMLTags.PRE, children=[])
-                codeblock_text_node = TextNode(text=block.strip(BlockType.CODEBLOCK.markdown), text_type=TextType.CODE)
+                #text = block.strip(BlockType.CODEBLOCK.markdown
+                start_snip = block[0:3]
+                if start_snip != BlockType.CODEBLOCK.markdown:
+                    raise ValueError(f"Invalid codeblock markdown, expected opening delimiter {BlockType.CODEBLOCK.markdown!r} but got {start_snip!r} in block: {block!r}")
+                end_snip = block[-3:]
+                if end_snip != BlockType.CODEBLOCK.markdown:
+                    raise ValueError(f"Invalid codeblock markdown, expected closing delimiter {BlockType.CODEBLOCK.markdown!r} but got {end_snip!r} in block: {block!r}")
+                text = block[3:-3]
+                if not text.endswith("\n"):
+                    text = text + "\n"
+                codeblock_text_node = TextNode(text=text, text_type=TextType.CODE)
                 pre_wrapper.children.append(MarkUpTools.text_node_to_html_node(codeblock_text_node))
                 line_node = pre_wrapper
             elif block_type in [BlockType.ORDERED_LIST_ITEM, BlockType.UNORDERED_LIST_ITEM]:
