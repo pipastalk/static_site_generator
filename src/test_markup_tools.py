@@ -414,13 +414,13 @@ def fn():
         node = MarkUpTools.markdown_to_html_node(md)
         expected = (
             "<div>"
-            "<h1># Heading 1</h1>"
-            "<h2>## Subheading 2</h2>"
+            "<h1>Heading 1</h1>"
+            "<h2>Subheading 2</h2>"
             "<p>Paragraph with <b>bold</b> and <i>italic</i> and <code>inline</code></p>"
             "<pre><code>def fn():\n    return True\n</code></pre>"
             "<ol><li>First</li><li>Second</li></ol>"
             "<ul><li>Uno</li><li>Dos</li></ul>"
-            "<blockquote>> A quoted line</blockquote>"
+            "<blockquote>A quoted line</blockquote>"
             "</div>"
         )
         self.assertEqual(node.to_html(), expected)
@@ -434,8 +434,8 @@ def fn():
         node = MarkUpTools.markdown_to_html_node(md)
         expected = (
             "<div>"
-            "<h1># Heading with <b>bold</b> and <code>code</code></h1>"
-            "<h2>## Another <i>italic</i> heading</h2>"
+            "<h1>Heading with <b>bold</b> and <code>code</code></h1>"
+            "<h2>Another <i>italic</i> heading</h2>"
             "</div>"
         )
         self.assertEqual(node.to_html(), expected)

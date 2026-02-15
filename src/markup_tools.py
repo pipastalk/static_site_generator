@@ -209,6 +209,11 @@ class MarkUpTools:
     def block_to_html_nodes(block, block_type):
         # Helper function to convert a block of text into an HTMLNode based on its BlockType. Does not support CodeBlocks
         wrapper_node = None
+        if block_type == BlockType.QUOTE:
+            block = block.replace("\n> ", "\n")
+        if block_type not in [BlockType.UNORDERED_LIST_ITEM, BlockType.ORDERED_LIST_ITEM] and block_type.markdown is not None:
+            #Strips the markdown from the syntax specific cases removed such as list items.
+            block = block[len(block_type.markdown):]
         block = block.replace("\n", " ")
         text_nodes = MarkUpTools.text_to_text_nodes(block)
         if len(text_nodes)  < 1:
