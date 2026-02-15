@@ -192,12 +192,12 @@ class MarkUpTools:
                 line_node = MarkUpTools.block_to_html_nodes(block, block_type)
             parent_div.children.append(line_node)
         return parent_div
-    
 
     def block_to_html_nodes(block, block_type):
         # Helper function to convert a block of text into an HTMLNode based on its BlockType. Does not support CodeBlocks
         wrapper_node = None
         text_nodes = MarkUpTools.text_to_text_nodes(block)
+        block = block.replace("\n", " ")
         if len(text_nodes)  < 1:
             raise ValueError(f"Unexpected error, text_to_text_nodes returned empty list for block: {block!r}")
         for i in range(len(text_nodes)):
@@ -208,6 +208,7 @@ class MarkUpTools:
         if wrapper_node is None:
             raise ValueError(f"Unexpected error, wrapper_node is None after processing block: {block!r}")
         return wrapper_node
+    
     def list_block_to_html_nodes(block, block_type):
         if block_type == BlockType.ORDERED_LIST_ITEM:
             wrapper_node = HTMLNode(HTMLTags.OL, children=[])
@@ -216,15 +217,20 @@ class MarkUpTools:
         else:
             raise ValueError(f"Unsupported BlockType for list_block_to_html_nodes: {block_type!r}")
         block_lines = block.split("\n")
-        delimiter = block_type.markdown
+        
         for i in range(len(block_lines)):
             snipet = block_lines[i]
             if snipet == "":
                 continue
             if block_type == BlockType.ORDERED_LIST_ITEM:
-                snipet = re.sub(delimiter, "", snipet)
-                list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.ORDERED_LIST_ITEM)
+                delimiter = f"{i+1}. "
+                if snipet.startswith(delimiter):
+                    snipet = re.sub(delimiter, "", snipet)
+                    list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.ORDERED_LIST_ITEM)
+                else:
+                    raise ValueError(f"Invalid ordered list number in {snipet!r}")
             elif block_type == BlockType.UNORDERED_LIST_ITEM:
+                delimiter = block_type.markdown
                 snipet = re.sub(delimiter, "", snipet)
                 list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.UNORDERED_LIST_ITEM)
             else:
