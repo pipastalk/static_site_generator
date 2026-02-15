@@ -7,9 +7,13 @@ class TextType(Enum):
     TEXT = ("text", None, None, None, None, None)
     BOLD = ("bold", "**", "**", "<strong>", "</strong>", "inline")
     ITALIC = ("italic", "_", "_", "<em>", "</em>", "inline")
+    CODEBLOCK = ("codeblock", "```", "```", "<pre><code>", "</code></pre>", "preformatted")
     CODE = ("code", "`", "`", "<code>", "</code>", "inline")
+    QUOTE = ("quote", "> ", None, "<blockquote>", "</blockquote>", "inline")
     LINK = ("link", None, None, "<a>", "</a>", "special")
     IMAGE = ("image", None, None, "<img>", "</img>", "special")
+    ORDERED_LIST_ITEM = ("ordered_list_item", r"^\d+\.", None, "<li>", "</li>", "block")
+    UNORDERED_LIST_ITEM = ("unordered_list_item", r"- ", None, "<li>", "</li>", "block")
     
     @property
     def display_name(self):

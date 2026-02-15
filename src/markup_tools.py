@@ -1,6 +1,6 @@
+import re
 from htmlnode import HTMLNode, HTMLTags, LeafNode
 from textnode import TextNode, TextType
-import re
 from blocknode import BlockType, BlockNode
 
 class MarkUpTools:
@@ -40,6 +40,10 @@ class MarkUpTools:
             case TextType.IMAGE:
                 tag = HTMLTags.IMG
                 props = {"src": text_node.url, "alt": text_node.text}
+            case TextType.CODE:
+                tag = HTMLTags.CODE
+            case TextType.QUOTE:
+                tag = HTMLTags.BLOCKQUOTE
             case _:
                 raise ValueError(f"Unsupported TextType for conversion to HTMLNode: {text_node.text_type!r}")
         return LeafNode(tag=tag, value=text_node.text, props=props)
@@ -72,11 +76,13 @@ class MarkUpTools:
                     raise ValueError(f"{TextType.LINK.display_name.lower()} text is missing in {match}") 
             return matches
         return []
+    
     def split_nodes_link(old_nodes): #wrapper function
         return MarkUpTools.split_nodes_special(old_nodes, TextType.LINK)
 
     def split_nodes_image(old_nodes): #wrapper function
         return MarkUpTools.split_nodes_special(old_nodes, TextType.IMAGE)
+    
     def split_nodes_special(old_nodes, text_type:TextType):
         if isinstance(old_nodes, TextNode):
             old_nodes = [old_nodes]
@@ -121,12 +127,11 @@ class MarkUpTools:
         return new_nodes    
     
     def text_to_text_nodes(text):
-        # "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
         nodes = [TextNode(text, TextType.TEXT)]
         for tag in TextType:
             if tag.category != "inline":
                 continue
-            elif  tag.markdown_close == None or tag.markdown_open == None:
+            elif tag.markdown_close == None or tag.markdown_open == None:
                 continue
             if tag.markdown_open == tag.markdown_close:
                 nodes = MarkUpTools.split_nodes_delimiter(nodes, tag.markdown_open, tag)
@@ -136,6 +141,7 @@ class MarkUpTools:
         nodes = MarkUpTools.split_nodes_image(nodes)
         nodes = MarkUpTools.split_nodes_link(nodes)
         return nodes
+    
     def markdown_to_blocks(text):
         lines = text.split("\n\n")
         blocks = []
@@ -169,4 +175,60 @@ class MarkUpTools:
                     raise ValueError(f"Empty block, {tag.display_name} has no content {block!r}")
                 return tag
         return BlockType.PARAGRAPH
+    
+    def markdown_to_html_node(markdown):
+        parent_div = HTMLNode(HTMLTags.DIV, children=[])
+        blocks = MarkUpTools.markdown_to_blocks(markdown)
+        for block in blocks:
+            block_type = MarkUpTools.block_to_block_type(block)
+            if block_type == BlockType.CODEBLOCK:
+                pre_wrapper = HTMLNode(HTMLTags.PRE, children=[])
+                codeblock_text_node = TextNode(text=block.strip(BlockType.CODEBLOCK.markdown), text_type=TextType.CODE)
+                pre_wrapper.children.append(MarkUpTools.text_node_to_html_node(codeblock_text_node))
+                line_node = pre_wrapper
+            elif block_type in [BlockType.ORDERED_LIST_ITEM, BlockType.UNORDERED_LIST_ITEM]:
+                line_node = MarkUpTools.list_block_to_html_nodes(block, block_type)
+            else:
+                line_node = MarkUpTools.block_to_html_nodes(block, block_type)
+            parent_div.children.append(line_node)
+        return parent_div
+    
+
+    def block_to_html_nodes(block, block_type):
+        # Helper function to convert a block of text into an HTMLNode based on its BlockType. Does not support CodeBlocks
+        wrapper_node = None
+        text_nodes = MarkUpTools.text_to_text_nodes(block)
+        if len(text_nodes)  < 1:
+            raise ValueError(f"Unexpected error, text_to_text_nodes returned empty list for block: {block!r}")
+        for i in range(len(text_nodes)):
+            if i == 0:
+                wrapper_node = HTMLNode(block_type.html_tag, children=[])
+            leaf_node = MarkUpTools.text_node_to_html_node(text_nodes[i])
+            wrapper_node.children.append(leaf_node)
+        if wrapper_node is None:
+            raise ValueError(f"Unexpected error, wrapper_node is None after processing block: {block!r}")
+        return wrapper_node
+    def list_block_to_html_nodes(block, block_type):
+        if block_type == BlockType.ORDERED_LIST_ITEM:
+            wrapper_node = HTMLNode(HTMLTags.OL, children=[])
+        elif block_type == BlockType.UNORDERED_LIST_ITEM:
+            wrapper_node = HTMLNode(HTMLTags.UL, children=[])
+        else:
+            raise ValueError(f"Unsupported BlockType for list_block_to_html_nodes: {block_type!r}")
+        block_lines = block.split("\n")
+        delimiter = block_type.markdown
+        for i in range(len(block_lines)):
+            snipet = block_lines[i]
+            if snipet == "":
+                continue
+            if block_type == BlockType.ORDERED_LIST_ITEM:
+                snipet = re.sub(delimiter, "", snipet)
+                list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.ORDERED_LIST_ITEM)
+            elif block_type == BlockType.UNORDERED_LIST_ITEM:
+                snipet = re.sub(delimiter, "", snipet)
+                list_item_nodes = MarkUpTools.block_to_html_nodes(block=snipet, block_type=BlockType.UNORDERED_LIST_ITEM)
+            else:
+                raise ValueError(f"Unsupported BlockType for list_block_to_html_nodes: {block_type!r}")
+            wrapper_node.children.append(list_item_nodes)
+        return wrapper_node
 #TODO Handle invalid src or href URLs inside split_nodes_special

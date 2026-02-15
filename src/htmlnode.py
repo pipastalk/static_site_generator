@@ -22,6 +22,11 @@ class HTMLTags(Enum):
     B = "b"
     I = "i"
     U = "u"
+    PRE = "pre"
+    CODEBLOCK = "codeblock"
+    CODE = "code"
+    QUOTE = "blockquote"
+    OL = "ol" #TODO add support for ordered lists in markdown_to_html_node
     RAW_TEXT = None # Special case for raw text nodes
 
 class HTMLNode:
@@ -51,7 +56,6 @@ class HTMLNode:
             self.value == other.value and
             self.props == other.props
         )
-    
 
 class LeafNode(HTMLNode):
     def __init__(self, tag, value, props=None):

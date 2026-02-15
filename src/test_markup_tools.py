@@ -1,7 +1,7 @@
+import unittest
 from unittest import result
 from markup_tools import *
 from textnode import TextNode, TextType
-import unittest
 from blocknode import BlockType, BlockNode
 class Test_Split_Nodes_Delimiter(unittest.TestCase):
     def test_markup_tool_functionality(self):
