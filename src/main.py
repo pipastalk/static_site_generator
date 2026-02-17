@@ -1,6 +1,13 @@
-from .textnode import TextNode
+import os
+import shutil
 def main():
-    tn1 = TextNode('This is some anchor text', 'link', 'https://www.boot.dev')
-    print(tn1)
-
+    refresh_content()
+    
+def refresh_content():
+    public_dir = os.path.join(os.getcwd(), "public")
+    if os.path.exists(public_dir):
+        print("Removing existing public directory...")
+        shutil.rmtree(public_dir)
+    source = os.path.join(os.getcwd(), "static")
+    shutil.copytree(source, public_dir)
 main()

@@ -257,4 +257,16 @@ class MarkUpTools:
                 raise ValueError(f"Unsupported BlockType for list_block_to_html_nodes: {block_type!r}")
             wrapper_node.children.append(list_item_nodes)
         return wrapper_node
+
+    def extract_title(markdown):
+        node = MarkUpTools.markdown_to_blocks(markdown)
+        for block in node:
+            block_type = MarkUpTools.block_to_block_type(block)
+            if block_type == BlockType.H1:
+                text = block[len(BlockType.H1.markdown):]
+                return text
+        raise ValueError(f"No title found in markdown {markdown!r}") 
+
+#TODO test refactored extract_title 
 #TODO Handle invalid src or href URLs inside split_nodes_special
+#TODO Change to static tools properly

@@ -485,5 +485,127 @@ class Test_Error_Cases(unittest.TestCase):
         md = "1. First item\nSecond item without number\n3. Third item\n- Fourth item"
         with self.assertRaises(ValueError):
             MarkUpTools.markdown_to_html_node(md)
+    #TODO BELOW - fix known bug where /n/n within a codeblock leads to invalid snippet parsing in markdown_to_blocks
+    def DISABLED_test_codeblock_with_ending_newlines(self):
+        
+        md = """
+```python
+# Code block example
+def foo():
+    return "bar"
+    
+    # Trick Title in code block
+
+```
+"""
+        #node = MarkUpTools.markdown_to_html_node(md)
+        #html = node.to_html()
+        #expected_html = "<div><pre><code>python\n# Code block example\ndef foo():\n    return \"bar\"\n    \n    # Trick Title in code block\n</code></pre></div>"
+        #self.assertEqual(html, expected_html)
+
+class TestExtractTitle(unittest.TestCase):
+    def test_extract_title(self):
+        md = """
+This is a test paragraph with some **bold** and *italic* text.
+
+## Subheading (H2)
+
+- List item one
+- List item two
+- Nested item
+
+# Main Title (H1)
+
+### Details (H3)
+
+1. First step
+2. Second step
+
+> This is a blockquote for testing.
+
+#### Subsection (H4)
+
+Inline code: `print("Hello, world!")`
+
+```python
+# Code block example
+def foo():
+    return "bar"
+```
+"""
+        title = MarkUpTools.extract_title(md)
+        return title
+
+    def test_extract_title_codeblock_title(self):
+        md = """
+This is a test paragraph with some **bold** and *italic* text.
+
+## Subheading (H2)
+
+- List item one
+- List item two
+- Nested item
+
+### Details (H3)
+
+1. First step
+2. Second step
+
+> This is a blockquote for testing.
+
+#### Subsection (H4)
+
+Inline code: `print("Hello, world!")`
+
+```python
+# Code block example
+def foo():
+    return "bar"
+    
+    # Trick Title in code block
+```
+
+# Main Title (H1)
+"""
+        title = MarkUpTools.extract_title(md)
+        return title
+
+    def test_extract_title_two_titles(self):
+        md = """
+This is a test paragraph with some **bold** and *italic* text.
+
+# Main Title (H1)
+
+## Subheading (H2)
+
+- List item one
+- List item two
+- Nested item
+
+
+### Details (H3)
+
+1. First step
+2. Second step
+
+> This is a blockquote for testing.
+
+#### Subsection (H4)
+
+Inline code: `print("Hello, world!")`
+
+```python
+# Code block example
+def foo():
+    return "bar"
+    
+    # Trick Title in code block
+```
+
+# Second Main Title (H1)
+"""
+        title = MarkUpTools.extract_title(md)
+        return title
+
 if __name__ == '__main__':
     unittest.main()
