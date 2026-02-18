@@ -295,6 +295,6 @@ class MarkUpTools:
         with open(dest_path, "w") as f:
             f.write(final_html)
         
-#TODO Fix bug where inline text with image or links are not picked up as the correct htmlnode
-#TODO Handle invalid src or href URLs inside split_nodes_special
-#TODO Change to static tools properly
+#TODO HIGH Fix bug where inline text with image or links are not picked up as the correct htmlnode
+#TODO LOW (out of scope) Handle invalid src or href URLs inside split_nodes_special
+#TODO MEDIUM Change to static tools properly

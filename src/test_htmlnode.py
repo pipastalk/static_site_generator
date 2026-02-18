@@ -45,7 +45,7 @@ class TestLeafNode(unittest.TestCase):
     
     def test_leafnode_to_html(self):
         leaf = LeafNode(tag="span", value="Sample text", props={"style": "color:red;"})
-        expected_html = '<span>Sample text</span>'
+        expected_html = '<span style="color:red;">Sample text</span>'
         self.assertEqual(leaf.to_html(), expected_html)
         noneTagLeaf = LeafNode(tag=None, value="Sample text", props={"style": "color:red;"})
         expected_html_none_tag = 'Sample text'

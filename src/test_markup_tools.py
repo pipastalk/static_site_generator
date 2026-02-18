@@ -534,7 +534,7 @@ def foo():
 ```
 """
         title = MarkUpTools.extract_title(md)
-        return title
+        self.assertEqual(title, "Main Title (H1)")
 
     def test_extract_title_codeblock_title(self):
         md = """
@@ -568,7 +568,7 @@ def foo():
 # Main Title (H1)
 """
         title = MarkUpTools.extract_title(md)
-        return title
+        self.assertEqual(title, "Main Title (H1)")
 
     def test_extract_title_two_titles(self):
         md = """
@@ -605,7 +605,7 @@ def foo():
 # Second Main Title (H1)
 """
         title = MarkUpTools.extract_title(md)
-        return title
+        self.assertEqual(title, "Main Title (H1)")
 
 if __name__ == '__main__':
     unittest.main()
