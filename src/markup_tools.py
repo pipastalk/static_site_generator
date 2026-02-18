@@ -270,7 +270,7 @@ class MarkUpTools:
                 return text
         raise ValueError(f"No title found in markdown {markdown!r}") 
 
-    def generate_page(from_path, template_path, dest_path, base_path="/"):
+    def generate_page(from_path, template_path, dest_path):
         print(f"Generating page from {from_path} using template {template_path} and saving to {dest_path}")
         if not os.path.exists(from_path):
             raise FileNotFoundError(f"Source file not found: {from_path}")
@@ -290,30 +290,11 @@ class MarkUpTools:
             template_html = f.read()
         source_html = MarkUpTools.markdown_to_html_node(source_markdown).to_html()
         source_title = MarkUpTools.extract_title(source_markdown)
-        final_html = MarkUpTools.finalize_html(template_html, source_html, source_title, base_path)
+        final_html = template_html.replace("{{ Content }}", source_html)
+        final_html = final_html.replace("{{ Title }}", source_title)
         with open(dest_path, "w") as f:
             f.write(final_html)
-    def finalize_html(template_html, source_html, source_title, base_path):
-        updated_html = template_html.replace("{{ Content }}", source_html)
-        updated_html = updated_html.replace("{{ Title }}", source_title)
-        updated_html = updated_html.replace("href=\"/", f"href=\"{base_path}")
-        updated_html = updated_html.replace("src=\"/", f"src=\"{base_path}")
-        return updated_html
-
-    def generate_pages_recursive(directory, template_path, dest_path, base_path="/"):
-        for path, subdirs, files in os.walk(directory):
-            rel_path = os.path.relpath(path, directory)
-            dest_dir = os.path.join(dest_path, rel_path) if rel_path != '.' else dest_path
-            if not os.path.exists(dest_dir):
-                os.makedirs(dest_dir)
-            for name in files:
-                if name.endswith('.md'):
-                    src_file = os.path.join(path, name)
-                    # Output file: same relative path, .html extension
-                    base_name = os.path.splitext(name)[0] + '.html'
-                    dest_file = os.path.join(dest_dir, base_name)
-                    MarkUpTools.generate_page(src_file, template_path, dest_file, base_path)
-
+        
 #TODO HIGH Fix bug where inline text with image or links are not picked up as the correct htmlnode
 #TODO LOW (out of scope) Handle invalid src or href URLs inside split_nodes_special
 #TODO MEDIUM Change to static tools properly
