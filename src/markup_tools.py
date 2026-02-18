@@ -294,7 +294,19 @@ class MarkUpTools:
         final_html = final_html.replace("{{ Title }}", source_title)
         with open(dest_path, "w") as f:
             f.write(final_html)
-        
+    def generate_page_recursive(template_path, directory, dest_path):
+        for path, subdirs, files in os.walk(directory):
+            rel_path = os.path.relpath(path, directory)
+            dest_dir = os.path.join(dest_path, rel_path) if rel_path != '.' else dest_path
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+            for name in files:
+                if name.endswith('.md'):
+                    src_file = os.path.join(path, name)
+                    # Output file: same relative path, .html extension
+                    base_name = os.path.splitext(name)[0] + '.html'
+                    dest_file = os.path.join(dest_dir, base_name)
+                    MarkUpTools.generate_page(src_file, template_path, dest_file)
 #TODO HIGH Fix bug where inline text with image or links are not picked up as the correct htmlnode
 #TODO LOW (out of scope) Handle invalid src or href URLs inside split_nodes_special
 #TODO MEDIUM Change to static tools properly
