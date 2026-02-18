@@ -1,3 +1,4 @@
+import os
 import re
 from htmlnode import *
 from textnode import TextNode, TextType
@@ -267,6 +268,31 @@ class MarkUpTools:
                 return text
         raise ValueError(f"No title found in markdown {markdown!r}") 
 
-#TODO test refactored extract_title 
+    def generate_page(from_path, template_path, dest_path):
+        print(f"Generating page from {from_path} using template {template_path} and saving to {dest_path}")
+        if not os.path.exists(from_path):
+            raise FileNotFoundError(f"Source file not found: {from_path}")
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template file not found: {template_path}")
+        #region destination path validation
+        if os.path.exists(dest_path):
+            raise FileExistsError(f"Destination file already exists: {dest_path}")
+        if os.getcwd() not in os.path.abspath(dest_path):
+            raise ValueError(f"Destination path must be within the current working directory: {dest_path}")
+        if not os.path.exists(os.path.dirname(dest_path)):
+            os.makedirs(os.path.dirname(dest_path))    
+        #endregion 
+        with open(from_path, "r") as f:
+            source_markdown = f.read()
+        with open(template_path, "r") as f:
+            template_html = f.read()
+        source_html = MarkUpTools.markdown_to_html_node(source_markdown).to_html()
+        source_title = MarkUpTools.extract_title(source_markdown)
+        final_html = template_html.replace("{{ Content }}", source_html)
+        final_html = final_html.replace("{{ Title }}", source_title)
+        with open(dest_path, "w") as f:
+            f.write(final_html)
+        
+#TODO Fix bug where inline text with image or links are not picked up as the correct htmlnode
 #TODO Handle invalid src or href URLs inside split_nodes_special
 #TODO Change to static tools properly

@@ -67,10 +67,8 @@ class LeafNode(HTMLNode):
         if self.value is None:
             raise ValueError("Leaf node must have a value")
         if self.tag is HTMLTags.RAW_TEXT:
-            return self.value
-        tag = f"<{self.tag.value}>"
-        endtag = f"</{self.tag.value}>"
-        return f"{tag}{self.value}{endtag}"
+            return self.value    
+        return f"<{self.tag.value}{self.props_to_html()}>{self.value}</{self.tag.value}>"
     def __repr__(self):
         return f"leafNode(tag={self.tag!r}, value={self.value!r}, props={self.props!r})"
 
