@@ -1,12 +1,12 @@
 import unittest
 from unittest import result
-from markup_tools import *
+from tools import *
 from textnode import TextNode, TextType
 from blocknode import BlockType, BlockNode
 class Test_Split_Nodes_Delimiter(unittest.TestCase):
     def test_markup_tool_functionality(self):
         node = TextNode("This is text with a `code block` and another `snippet` word", TextType.TEXT)
-        new_nodes = MarkUpTools.split_nodes_delimiter([node], "`", TextType.CODE)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
         expected_nodes = [
             TextNode("This is text with a ", TextType.TEXT),
             TextNode("code block", TextType.CODE),
@@ -18,7 +18,7 @@ class Test_Split_Nodes_Delimiter(unittest.TestCase):
 
     def test_bold_splitting(self):
         node = TextNode("This is **bold** text and **strong** emphasis", TextType.TEXT)
-        new_nodes = MarkUpTools.split_nodes_delimiter([node], "**", TextType.BOLD)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
         expected_nodes = [
             TextNode("This is ", TextType.TEXT),
             TextNode("bold", TextType.BOLD),
@@ -30,7 +30,7 @@ class Test_Split_Nodes_Delimiter(unittest.TestCase):
 
     def test_italic_splitting(self):
         node = TextNode("This is _italic_ text and _emphasis_ too", TextType.TEXT)
-        new_nodes = MarkUpTools.split_nodes_delimiter([node], "_", TextType.ITALIC)
+        new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
         expected_nodes = [
             TextNode("This is ", TextType.TEXT),
             TextNode("italic", TextType.ITALIC),
@@ -42,9 +42,9 @@ class Test_Split_Nodes_Delimiter(unittest.TestCase):
 
     def test_mixed_splitting(self):
         node = TextNode("This is **bold** and `code` with _italic_ text", TextType.TEXT)
-        nodes_after_bold = MarkUpTools.split_nodes_delimiter([node], "**", TextType.BOLD)
-        nodes_after_code = MarkUpTools.split_nodes_delimiter(nodes_after_bold, "`", TextType.CODE)
-        final_nodes = MarkUpTools.split_nodes_delimiter(nodes_after_code, "_", TextType.ITALIC)
+        nodes_after_bold = split_nodes_delimiter([node], "**", TextType.BOLD)
+        nodes_after_code = split_nodes_delimiter(nodes_after_bold, "`", TextType.CODE)
+        final_nodes = split_nodes_delimiter(nodes_after_code, "_", TextType.ITALIC)
         expected_nodes = [
             TextNode("This is ", TextType.TEXT),
             TextNode("bold", TextType.BOLD),
@@ -59,26 +59,26 @@ class Test_Split_Nodes_Delimiter(unittest.TestCase):
     def test_unmatched_delimiter(self):
         node = TextNode("This is `unmatched code block text", TextType.TEXT)
         with self.assertRaises(ValueError):
-            MarkUpTools.split_nodes_delimiter([node], "`", TextType.CODE)
+            split_nodes_delimiter([node], "`", TextType.CODE)
 
     def test_text_node_to_html_node(self):
         rawTextNode = TextNode("This is a text node", TextType.TEXT)
-        html_node = MarkUpTools.text_node_to_html_node(rawTextNode)
+        html_node = text_node_to_html_node(rawTextNode)
         self.assertEqual(html_node.tag.value, None)
         self.assertEqual(html_node.value, "This is a text node")
         self.assertIsNone(html_node.props)
         boldTextNode = TextNode("Bold text", TextType.BOLD)
-        html_node =  MarkUpTools.text_node_to_html_node(boldTextNode)
+        html_node =  text_node_to_html_node(boldTextNode)
         self.assertEqual(html_node.tag.value, "b")
         self.assertEqual(html_node.value, "Bold text")
         self.assertIsNone(html_node.props)
         linkTextNode = TextNode("Link text", TextType.LINK, "https://example.com")
-        html_node = MarkUpTools.text_node_to_html_node(linkTextNode)
+        html_node = text_node_to_html_node(linkTextNode)
         self.assertEqual(html_node.tag.value, "a")
         self.assertEqual(html_node.value, "Link text")
         self.assertEqual(html_node.props, {"href": "https://example.com"})
         imageTextNode = TextNode("Image alt text", TextType.IMAGE, "https://example.com/image.png")
-        html_node = MarkUpTools.text_node_to_html_node(imageTextNode)
+        html_node = text_node_to_html_node(imageTextNode)
         self.assertEqual(html_node.tag.value, "img")
         self.assertEqual(html_node.value, "Image alt text")
         self.assertEqual(html_node.props, {"src": "https://example.com/image.png", "alt": "Image alt text"})
@@ -87,58 +87,58 @@ class TestExtractMarkdownLinks(unittest.TestCase):
     def test_link_missing(self):
         text = "[](http://example.com)"
         with self.assertRaises(ValueError):
-            MarkUpTools.extract_markdown_links(text)
+            extract_markdown_links(text)
 
     def test_url_missing(self):
         text = "[Example]()"
         with self.assertRaises(ValueError):
-            MarkUpTools.extract_markdown_links(text)
+            extract_markdown_links(text)
 
     def test_link_and_url_missing(self):
         text = "[]()"
         with self.assertRaises(ValueError):
-            MarkUpTools.extract_markdown_links(text)
+            extract_markdown_links(text)
 
     def test_link_and_url_valid(self):
         text = "[Example](http://example.com)"
-        result = MarkUpTools.extract_markdown_links(text)
+        result = extract_markdown_links(text)
         self.assertEqual(result, [("Example", "http://example.com")])
 
     def test_misformatted_markup_for_links(self):
         text = "[Example(http://example.com)"
-        self.assertEqual(MarkUpTools.extract_markdown_links(text), [])
+        self.assertEqual(extract_markdown_links(text), [])
 
 class TestExtractMarkdownImages(unittest.TestCase):
     def test_image_missing(self):
         text = "![](http://example.com/image.png)"
         # Should not raise, just pass silently
-        result = MarkUpTools.extract_markdown_images(text)
+        result = extract_markdown_images(text)
         self.assertEqual(result, [("", "http://example.com/image.png")])
 
     def test_url_missing(self):
         text = "![alt text]()"
         with self.assertRaises(ValueError):
-            MarkUpTools.extract_markdown_images(text)
+            extract_markdown_images(text)
 
     def test_image_and_url_missing(self):
         text = "![]()"
         with self.assertRaises(ValueError):
-            MarkUpTools.extract_markdown_images(text)
+            extract_markdown_images(text)
 
     def test_image_and_url_valid(self):
         text = "![alt text](http://example.com/image.png)"
-        result = MarkUpTools.extract_markdown_images(text)
+        result = extract_markdown_images(text)
         self.assertEqual(result, [("alt text", "http://example.com/image.png")])
 
     def test_misformatted_markup_for_image(self):
         text = "![alt text(http://example.com/image.png)"
-        self.assertEqual(MarkUpTools.extract_markdown_images(text), [])
+        self.assertEqual(extract_markdown_images(text), [])
 
 # Tests for split_nodes_link
 class Test_Split_Nodes_Link(unittest.TestCase):
     def test_single_link(self):
         node = TextNode("This is a [link](http://example.com) in text", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+        result = split_nodes_special(node, TextType.LINK)
         expected = [
             TextNode("This is a ", TextType.TEXT),
             TextNode("link", TextType.LINK, "http://example.com"),
@@ -148,16 +148,16 @@ class Test_Split_Nodes_Link(unittest.TestCase):
 
     def test_link_type_passthrough(self):
         node = TextNode("already a link", TextType.LINK, "url")
-        result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+        result = split_nodes_special(node, TextType.LINK)
         self.assertEqual(result, [node])
 
     def test_no_links(self):
         node = TextNode("No links here", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+        result = split_nodes_special(node, TextType.LINK)
         self.assertEqual(result, [node])
     def test_link_at_start(self):
         node = TextNode("[start](http://start.com) is the beginning", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+        result = split_nodes_special(node, TextType.LINK)
         expected = [
             TextNode("start", TextType.LINK, "http://start.com"),
             TextNode(" is the beginning", TextType.TEXT),
@@ -165,7 +165,7 @@ class Test_Split_Nodes_Link(unittest.TestCase):
         self.assertEqual(result, expected)
     def test_link_at_end(self):
         node = TextNode("This is the end [end](http://end.com)", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+        result = split_nodes_special(node, TextType.LINK)
         expected = [
             TextNode("This is the end ", TextType.TEXT),
             TextNode("end", TextType.LINK, "http://end.com"),
@@ -174,14 +174,14 @@ class Test_Split_Nodes_Link(unittest.TestCase):
     def test_no_url_in_link(self):
         node = TextNode("This is a [link]() in text", TextType.TEXT)
         with self.assertRaises(ValueError):
-            result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+            result = split_nodes_special(node, TextType.LINK)
     def test_no_link_text(self):
         node = TextNode("This is a [](http://example.com) in text", TextType.TEXT)
         with self.assertRaises(ValueError):
-            result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+            result = split_nodes_special(node, TextType.LINK)
     def test_multiple_links(self):
         node = TextNode("[first](a.com) and [second](b.com)", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.LINK)
+        result = split_nodes_special(node, TextType.LINK)
         expected = [
             TextNode("first", TextType.LINK, "a.com"),
             TextNode(" and ", TextType.TEXT),
@@ -192,7 +192,7 @@ class Test_Split_Nodes_Link(unittest.TestCase):
 class Test_Split_Nodes_Image(unittest.TestCase):
     def test_single_image(self):
         node = TextNode("This is an ![alt](img.png) in text", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.IMAGE)
+        result = split_nodes_special(node, TextType.IMAGE)
         expected = [
             TextNode("This is an ", TextType.TEXT),
             TextNode("alt", TextType.IMAGE, "img.png"),
@@ -201,7 +201,7 @@ class Test_Split_Nodes_Image(unittest.TestCase):
         self.assertEqual(result, expected)
     def test_no_alt_text(self):
         node = TextNode("This is an ![](img.png) in text", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.IMAGE)
+        result = split_nodes_special(node, TextType.IMAGE)
         expected = [
             TextNode("This is an ", TextType.TEXT),
             TextNode("", TextType.IMAGE, "img.png"),
@@ -210,7 +210,7 @@ class Test_Split_Nodes_Image(unittest.TestCase):
         self.assertEqual(result, expected)
     def test_image_at_start(self):
         node = TextNode("![start](img.png) is the beginning", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.IMAGE)
+        result = split_nodes_special(node, TextType.IMAGE)
         expected = [
             TextNode("start", TextType.IMAGE, "img.png"),
             TextNode(" is the beginning", TextType.TEXT),
@@ -218,7 +218,7 @@ class Test_Split_Nodes_Image(unittest.TestCase):
         self.assertEqual(result, expected)
     def test_image_at_end(self):
         node = TextNode("This is the end ![end](img.png)", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.IMAGE)
+        result = split_nodes_special(node, TextType.IMAGE)
         expected = [
             TextNode("This is the end ", TextType.TEXT),
             TextNode("end", TextType.IMAGE, "img.png"),
@@ -226,22 +226,22 @@ class Test_Split_Nodes_Image(unittest.TestCase):
         self.assertEqual(result, expected)
     def test_image_type_passthrough(self):
         node = TextNode("already an image", TextType.IMAGE, "img.png")
-        result = MarkUpTools.split_nodes_special(node, TextType.IMAGE)
+        result = split_nodes_special(node, TextType.IMAGE)
         self.assertEqual(result, [node])
     def test_no_images(self):
         #error is handled inside function so it will return the original node
         node = TextNode("No images here", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special(node, TextType.IMAGE)
+        result = split_nodes_special(node, TextType.IMAGE)
         self.assertEqual(result, [node])
         #TODO do I need this test anymore?
 
     def test_no_image_inside_multiple_images(self):
         node = TextNode("![a](a.png) and [![noImage]()", TextType.TEXT)
         with self.assertRaises(ValueError): 
-            result = MarkUpTools.split_nodes_special([node], TextType.IMAGE)
+            result = split_nodes_special([node], TextType.IMAGE)
     def test_multiple_images(self):
         node = TextNode("![a](a.png) and ![b](b.png) and this is a no alt text image ![](noalt.png)", TextType.TEXT)
-        result = MarkUpTools.split_nodes_special([node], TextType.IMAGE)
+        result = split_nodes_special([node], TextType.IMAGE)
         expected = [
             TextNode("a", TextType.IMAGE, "a.png"),
             TextNode(" and ", TextType.TEXT),
@@ -255,7 +255,7 @@ class Test_Split_Nodes_Image(unittest.TestCase):
 class Test_Text_To_Text_Nodes(unittest.TestCase):
     def test_text_to_text_nodes(self):
         text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
-        nodes = MarkUpTools.text_to_text_nodes(text)
+        nodes = text_to_text_nodes(text)
         expected_nodes = [
             TextNode("This is ", TextType.TEXT),
             TextNode("text", TextType.BOLD),
@@ -280,7 +280,7 @@ This is the same paragraph on a new line
 - This is a list
 - with items
 """
-        blocks = MarkUpTools.markdown_to_blocks(md)
+        blocks = markdown_to_blocks(md)
         self.assertEqual(
             blocks,
             [
@@ -292,37 +292,37 @@ This is the same paragraph on a new line
 class TestBlockToBlockType(unittest.TestCase):
     def test_empty_block_raises(self):
         with self.assertRaises(ValueError):
-            MarkUpTools.block_to_block_type("")
+            block_to_block_type("")
     def test_empty_blocks(self):
         with self.assertRaises(ValueError):
-            MarkUpTools.block_to_block_type("#    ")
+            block_to_block_type("#    ")
         with self.assertRaises(ValueError):
-            MarkUpTools.block_to_block_type(">    ")
+            block_to_block_type(">    ")
     def test_open_codeblock(self):
         with self.assertRaises(ValueError):
-            MarkUpTools.block_to_block_type("``` I'm an unclosed codeblock")
+            block_to_block_type("``` I'm an unclosed codeblock")
     def test_headings(self):
-        self.assertEqual(MarkUpTools.block_to_block_type("# Heading 1"), BlockType.H1)
-        self.assertEqual(MarkUpTools.block_to_block_type("## Heading 2"), BlockType.H2)
-        self.assertEqual(MarkUpTools.block_to_block_type("### Heading 3"), BlockType.H3)
-        self.assertEqual(MarkUpTools.block_to_block_type("#### Heading 4"), BlockType.H4)
-        self.assertEqual(MarkUpTools.block_to_block_type("##### Heading 5"), BlockType.H5)
-        self.assertEqual(MarkUpTools.block_to_block_type("###### Heading 6"), BlockType.H6)
+        self.assertEqual(block_to_block_type("# Heading 1"), BlockType.H1)
+        self.assertEqual(block_to_block_type("## Heading 2"), BlockType.H2)
+        self.assertEqual(block_to_block_type("### Heading 3"), BlockType.H3)
+        self.assertEqual(block_to_block_type("#### Heading 4"), BlockType.H4)
+        self.assertEqual(block_to_block_type("##### Heading 5"), BlockType.H5)
+        self.assertEqual(block_to_block_type("###### Heading 6"), BlockType.H6)
 
     def test_quote(self):
-        self.assertEqual(MarkUpTools.block_to_block_type("> This is a quote"), BlockType.QUOTE)
+        self.assertEqual(block_to_block_type("> This is a quote"), BlockType.QUOTE)
 
     def test_unordered_list_item(self):
-        self.assertEqual(MarkUpTools.block_to_block_type("- List item"), BlockType.UNORDERED_LIST_ITEM)
+        self.assertEqual(block_to_block_type("- List item"), BlockType.UNORDERED_LIST_ITEM)
 
     def test_ordered_list_item(self):
-        self.assertEqual(MarkUpTools.block_to_block_type("1. Ordered item"), BlockType.ORDERED_LIST_ITEM)
+        self.assertEqual(block_to_block_type("1. Ordered item"), BlockType.ORDERED_LIST_ITEM)
 
     def test_codeblock(self):
-        self.assertEqual(MarkUpTools.block_to_block_type("```code with multiple lines \nof random stuff\n just to mess with you \n ddsadea```"), BlockType.CODEBLOCK)
+        self.assertEqual(block_to_block_type("```code with multiple lines \nof random stuff\n just to mess with you \n ddsadea```"), BlockType.CODEBLOCK)
 
     def test_no_match_returns_paragraph(self):
-        self.assertEqual(MarkUpTools.block_to_block_type("Just a normal paragraph."), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("Just a normal paragraph."), BlockType.PARAGRAPH)
 
 class TestBlockToHTMLNodes(unittest.TestCase):
     def test_paragraphs(self):
@@ -335,7 +335,7 @@ This is another paragraph with _italic_ text and `code` here
 
 """
 
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(
             html,
@@ -350,7 +350,7 @@ the **same** even with inline stuff
 ```
 """
 
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(
             html,
@@ -359,7 +359,7 @@ the **same** even with inline stuff
 
     def test_inline_bold_and_code(self):
         md = "hello **bold** world, `this is some code` hopefully that didn't break shit"
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(
             html,
@@ -369,26 +369,26 @@ the **same** even with inline stuff
     def test_codeblock_with_and_without_trailing_newline(self):
         md1 = "```\n**def hello_world():**\n    print('Hello, world!')\n```"
         md2 = "```\n**def hello_world():**\n    print('Hello, world!')```"
-        node1 = MarkUpTools.markdown_to_html_node(md1)
-        node2 = MarkUpTools.markdown_to_html_node(md2)
+        node1 = markdown_to_html_node(md1)
+        node2 = markdown_to_html_node(md2)
         expected = "<div><pre><code>**def hello_world():**\n    print('Hello, world!')\n</code></pre></div>"
         self.assertEqual(node1.to_html(), expected)
         self.assertEqual(node2.to_html(), expected)
 
     def test_ordered_list(self):
         md = "1. First item\n2. Second item\n3. Third item"
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         self.assertEqual(node.to_html(), "<div><ol><li>First item</li><li>Second item</li><li>Third item</li></ol></div>")
 
     def test_unordered_list(self):
         md = "- First item\n- Second item\n- Third item"
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         self.assertEqual(node.to_html(), "<div><ul><li>First item</li><li>Second item</li><li>Third item</li></ul></div>")
 
     def test_errored_ordered_list(self):
         md = "1. First item\n4. Second item\n3. Third item"
         with self.assertRaises(ValueError):
-            MarkUpTools.markdown_to_html_node(md)
+            markdown_to_html_node(md)
 
     def test_complex_markdown_all_features(self):
         md = """
@@ -411,7 +411,7 @@ def fn():
 
 > A quoted line
 """
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         expected = (
             "<div>"
             "<h1>Heading 1</h1>"
@@ -431,7 +431,7 @@ def fn():
 
 ## Another _italic_ heading
 """
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         expected = (
             "<div>"
             "<h1>Heading with <b>bold</b> and <code>code</code></h1>"
@@ -441,7 +441,7 @@ def fn():
         self.assertEqual(node.to_html(), expected)
     def test_quote_block(self):
         md = "> This is a quote\n> spanning multiple lines"
-        node = MarkUpTools.markdown_to_html_node(md)
+        node = markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(
             html,
@@ -451,40 +451,40 @@ class Test_Error_Cases(unittest.TestCase):
     def test_text_node_to_html_node_unsupported(self):
         node = TextNode("some codeblock", TextType.CODEBLOCK)
         with self.assertRaises(ValueError):
-            MarkUpTools.text_node_to_html_node(node)
+            text_node_to_html_node(node)
 
     def test_split_nodes_special_unsupported_type(self):
         node = TextNode("no special", TextType.TEXT)
         with self.assertRaises(ValueError):
-            MarkUpTools.split_nodes_special(node, TextType.TEXT)
+            split_nodes_special(node, TextType.TEXT)
 
     def test_block_to_block_type_empty_codeblock_raises(self):
         block = ""
         with self.assertRaises(ValueError):
-            MarkUpTools.block_to_block_type(block)
+            block_to_block_type(block)
 
     def test_list_block_to_html_nodes_unsupported_blocktype(self):
         with self.assertRaises(ValueError):
-            MarkUpTools.list_block_to_html_nodes("- item", BlockType.PARAGRAPH)
+            list_block_to_html_nodes("- item", BlockType.PARAGRAPH)
 
     def test_list_block_to_html_nodes_invalid_unordered_item(self):
         # line does not start with '- ' (missing space)
         md = "- First item\n-Second item"
         with self.assertRaises(ValueError):
-            MarkUpTools.markdown_to_html_node(md)
+            markdown_to_html_node(md)
     def test_malformed_lists(self):
         md = "1. First item\nSecond item without number\n3. Third item"
         with self.assertRaises(ValueError):
-            MarkUpTools.markdown_to_html_node(md)
+            markdown_to_html_node(md)
             md = "1. First item\n- Second item without number\n3. Third item"
         with self.assertRaises(ValueError):
-            MarkUpTools.markdown_to_html_node(md)
+            markdown_to_html_node(md)
         md = "- First item\nSecond item without number\n- Third item"
         with self.assertRaises(ValueError):
-            MarkUpTools.markdown_to_html_node(md)
+            markdown_to_html_node(md)
         md = "1. First item\nSecond item without number\n3. Third item\n- Fourth item"
         with self.assertRaises(ValueError):
-            MarkUpTools.markdown_to_html_node(md)
+            markdown_to_html_node(md)
     #TODO BELOW - fix known bug where /n/n within a codeblock leads to invalid snippet parsing in markdown_to_blocks
     def DISABLED_test_codeblock_with_ending_newlines(self):
         
@@ -498,7 +498,7 @@ def foo():
 
 ```
 """
-        #node = MarkUpTools.markdown_to_html_node(md)
+        #node = markdown_to_html_node(md)
         #html = node.to_html()
         #expected_html = "<div><pre><code>python\n# Code block example\ndef foo():\n    return \"bar\"\n    \n    # Trick Title in code block\n</code></pre></div>"
         #self.assertEqual(html, expected_html)
@@ -533,7 +533,7 @@ def foo():
     return "bar"
 ```
 """
-        title = MarkUpTools.extract_title(md)
+        title = extract_title(md)
         self.assertEqual(title, "Main Title (H1)")
 
     def test_extract_title_codeblock_title(self):
@@ -567,7 +567,7 @@ def foo():
 
 # Main Title (H1)
 """
-        title = MarkUpTools.extract_title(md)
+        title = extract_title(md)
         self.assertEqual(title, "Main Title (H1)")
 
     def test_extract_title_two_titles(self):
@@ -604,7 +604,7 @@ def foo():
 
 # Second Main Title (H1)
 """
-        title = MarkUpTools.extract_title(md)
+        title = extract_title(md)
         self.assertEqual(title, "Main Title (H1)")
 
 if __name__ == '__main__':

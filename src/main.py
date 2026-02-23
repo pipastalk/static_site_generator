@@ -1,10 +1,10 @@
 import os
 import shutil
 import sys
-from markup_tools import *
+from tools import *
 def main():
     refresh_content()
-    #MarkUpTools.generate_page("content/index.md", template_path, "public/index.html")
+    #generate_page("content/index.md", template_path, "public/index.html")
     
     template_path = "./template.html"
     directory = os.path.join(os.getcwd(), "content")
@@ -13,7 +13,7 @@ def main():
         base_path = sys.argv[1]
     else:
         base_path = "/"
-    MarkUpTools.generate_page_recursive(template_path, directory, dest_path, base_path)
+    generate_page_recursive(template_path, directory, dest_path, base_path)
 
     
 def refresh_content():
