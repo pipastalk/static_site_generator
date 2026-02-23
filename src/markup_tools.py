@@ -271,7 +271,7 @@ class MarkUpTools:
         raise ValueError(f"No title found in markdown {markdown!r}") 
 
     def generate_page(from_path, template_path, dest_path, base_path="/"):
-        print(f"Generating page from {from_path} using template {template_path} and saving to {dest_path}")
+        print(f"Generating page from {from_path} using template {template_path} and saving to {dest_path}, base path is {base_path}")
         if not os.path.exists(from_path):
             raise FileNotFoundError(f"Source file not found: {from_path}")
         if not os.path.exists(template_path):
@@ -290,7 +290,7 @@ class MarkUpTools:
             template_html = f.read()
         source_html = MarkUpTools.markdown_to_html_node(source_markdown).to_html()
         source_title = MarkUpTools.extract_title(source_markdown)
-        final_html = MarkUpTools.finalize_html(template_html, source_title, source_html)
+        final_html = MarkUpTools.finalize_html(template_html, source_title, source_html, base_path)
         with open(dest_path, "w") as f:
             f.write(final_html)
     def finalize_html(template_html, source_title, source_html, base_path="/"):
