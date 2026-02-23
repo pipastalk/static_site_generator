@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from markup_tools import *
 def main():
     refresh_content()
@@ -7,12 +8,16 @@ def main():
     
     template_path = "./template.html"
     directory = os.path.join(os.getcwd(), "content")
-    dest_path = os.path.join(os.getcwd(), "public")
-    MarkUpTools.generate_page_recursive(template_path, directory, dest_path)
+    dest_path = os.path.join(os.getcwd(), "docs")
+    if len(sys.argv) > 1:
+        base_path = sys.argv[1]
+    else:
+        base_path = "/"
+    MarkUpTools.generate_page_recursive(template_path, directory, dest_path, base_path)
 
     
 def refresh_content():
-    public_dir = os.path.join(os.getcwd(), "public")
+    public_dir = os.path.join(os.getcwd(), "docs")
     if os.path.exists(public_dir):
         print("Removing existing public directory...")
         shutil.rmtree(public_dir)
